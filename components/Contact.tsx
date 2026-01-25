@@ -1,14 +1,15 @@
 "use client";
 import React, { useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { Mail, Send, Sparkles, Check, Loader2, Phone, Linkedin, Github, MessageCircle } from "lucide-react"; // 'lucide-react' ලෙස නිවැරදි කරන ලදී
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { Mail, Send, Sparkles, Check, Loader2, Phone, MapPin, Linkedin, Github } from "lucide-react";
 import emailjs from "@emailjs/browser";
-import { EMAILJS_CONFIG } from "@/constants"; 
 
 const Contact = () => {
-  const form = useRef<HTMLFormElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isSending, setIsSending] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const [error, setError] = useState("");
   
   const [formData, setFormData] = useState({
     from_name: "",
@@ -17,240 +18,224 @@ const Contact = () => {
     message: "",
   });
 
+  // Mouse tracking for 3D effect
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [7, -7]), { stiffness: 150, damping: 25 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-7, 7]), { stiffness: 150, damping: 25 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
   const sendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.current) return;
-
+    if (!formRef.current) return;
+    
     setIsSending(true);
+    setError("");
 
     try {
-      await emailjs.sendForm(
-        EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID,
-        form.current,
-        EMAILJS_CONFIG.PUBLIC_KEY
+      const result = await emailjs.sendForm(
+        'service_lyw30iw', 
+        'template_tfgfcq6', 
+        formRef.current,
+        'enFVrQEcG2OLmaq0-'
       );
 
-      setIsSent(true);
-      setFormData({ from_name: "", reply_to: "", contact_number: "", message: "" });
-      form.current.reset();
-      
-      setTimeout(() => setIsSent(false), 5000);
-    } catch (error) {
-      console.error("EmailJS Error:", error);
-      alert("Something went wrong. Please try again later.");
+      if (result.text === 'OK') {
+        setIsSent(true);
+        setFormData({ from_name: "", reply_to: "", contact_number: "", message: "" });
+        formRef.current.reset();
+        setTimeout(() => setIsSent(false), 5000);
+      }
+    } catch {
+      setError("Failed to send message. Please try again.");
     } finally {
       setIsSending(false);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (error) setError("");
   };
 
-  const socialLinks = [
-    {
-      name: "LinkedIn",
-      icon: <Linkedin className="w-5 h-5" />,
-      link: "https://www.linkedin.com/in/ishan-ekanayaka-6682ba344",
-      color: "hover:text-blue-500",
-      bg: "bg-blue-500/10"
+  const contactInfo = [
+    { 
+        icon: Mail, 
+        label: "Email", 
+        value: "ishandilhara57@gmail.com", 
+        color: "from-blue-500 to-cyan-500", 
+        action: () => window.location.href = "mailto:ishandilhara57@gmail.com" 
     },
-    {
-      name: "GitHub",
-      icon: <Github className="w-5 h-5" />,
-      link: "https://github.com/ishan123888",
-      color: "hover:text-purple-500",
-      bg: "bg-purple-500/10"
+    { 
+        icon: Linkedin, 
+        label: "LinkedIn", 
+        value: "Ishan Ekanayaka", 
+        color: "from-blue-600 to-blue-800", 
+        action: () => window.open("https://www.linkedin.com/in/ishan-ekanayaka-6682ba344", "_blank") 
     },
-    {
-      name: "WhatsApp",
-      icon: <MessageCircle className="w-5 h-5" />,
-      link: "https://wa.me/94785493978",
-      color: "hover:text-green-500",
-      bg: "bg-green-500/10"
+    { 
+        icon: Github, 
+        label: "GitHub", 
+        value: "Ishan123888", 
+        color: "from-slate-700 to-slate-900", 
+        action: () => window.open("https://github.com/Ishan123888", "_blank") 
+    },
+    { 
+        icon: Phone, 
+        label: "WhatsApp", 
+        value: "+94 78 549 3978", 
+        color: "from-green-500 to-emerald-500", 
+        action: () => window.open("https://wa.me/94785493978", "_blank") 
+    },
+    { 
+        icon: MapPin, 
+        label: "Location", 
+        value: "Colombo, Sri Lanka", 
+        color: "from-purple-500 to-indigo-500", 
+        action: () => {} 
     }
   ];
 
   return (
-    <section id="contact" className="py-24 relative overflow-hidden">
-      {/* Background Decorative Glows */}
-      <div className="absolute inset-0 -z-10">
-        {/* Canonical Classes Fixed: w-125, h-125 */}
-        <div className="absolute top-1/2 left-1/4 w-125 h-125 bg-blue-500/10 rounded-full blur-[120px]" />
-        {/* Canonical Classes Fixed: w-100, h-100 */}
-        <div className="absolute bottom-1/4 right-1/4 w-100 h-100 bg-purple-500/10 rounded-full blur-[100px]" />
+    <section id="contact" className="py-32 relative overflow-hidden bg-slate-950">
+      {/* Background Blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] animate-pulse" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="relative"
+          ref={containerRef}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => { mouseX.set(0); mouseY.set(0); }}
+          className="perspective-2000"
         >
-          {/* Main Card Container */}
-          <div className="relative bg-slate-900/50 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-8 md:p-16 overflow-hidden shadow-2xl">
-            {/* Background Line Pattern Fixed: bg-size-[20px_20px] */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[20px_20px]" />
-            
-            <div className="relative z-10 grid lg:grid-cols-2 gap-16">
+          <motion.div
+            style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+            className="relative bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-8 md:p-16 shadow-2xl"
+          >
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
               
-              {/* Left Column: Content & Socials */}
-              <div className="space-y-10">
-                <div className="space-y-6">
-                  <motion.div 
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 shadow-inner"
-                  >
-                    <Sparkles className="w-4 h-4 text-blue-400" />
-                    <span className="text-sm font-semibold text-blue-400 uppercase tracking-[0.2em]">Contact Me</span>
-                  </motion.div>
-                  
-                  <h2 className="text-5xl md:text-7xl font-black text-white leading-tight tracking-tighter">
-                    Let&apos;s build <br />
-                    <span className="bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent italic">
-                      the future together.
-                    </span>
-                  </h2>
-                  <p className="text-slate-400 text-lg md:text-xl max-w-md leading-relaxed">
-                    Have a project in mind or just want to say hi? I&apos;m always open to discussing new opportunities.
-                  </p>
+              {/* Left Side: Text & Info */}
+              <div style={{ transform: "translateZ(50px)" }} className="space-y-10">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                  <Sparkles size={16} />
+                  <span className="text-xs font-bold uppercase tracking-tighter">Get in Touch</span>
                 </div>
 
-                {/* Direct Contact Info */}
-                <div className="grid gap-4">
-                  <div className="group flex items-center gap-5 p-5 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-                    <div className="bg-blue-500/20 p-4 rounded-2xl text-blue-400 group-hover:scale-110 transition-transform">
-                      <Mail size={28} />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Email</p>
-                      <p className="text-white font-medium text-lg">ishandilhara57@gmail.com</p>
-                    </div>
-                  </div>
-                  
-                  <div className="group flex items-center gap-5 p-5 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-                    <div className="bg-pink-500/20 p-4 rounded-2xl text-pink-400 group-hover:scale-110 transition-transform">
-                      <Phone size={28} />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">WhatsApp / Call</p>
-                      <p className="text-white font-medium text-lg">+94 78 549 3978</p>
-                    </div>
-                  </div>
-                </div>
+                <h2 className="text-5xl md:text-7xl font-black text-white leading-tight">
+                  Let&apos;s craft <br />
+                  <span className="bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent italic">something epic.</span>
+                </h2>
 
-                {/* Social Media Links */}
-                <div className="pt-6">
-                  <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mb-4">Follow Me</p>
-                  <div className="flex gap-4">
-                    {socialLinks.map((social) => (
-                      <motion.a
-                        key={social.name}
-                        href={social.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        whileHover={{ y: -5 }}
-                        className={`p-4 rounded-2xl ${social.bg} border border-white/5 text-slate-400 ${social.color} transition-all duration-300`}
-                        title={social.name}
-                      >
-                        {social.icon}
-                      </motion.a>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                  {contactInfo.map((info, i) => (
+                    <motion.div
+                      key={i}
+                      whileHover={{ x: 10 }}
+                      onClick={info.action}
+                      className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                    >
+                      <div className={`p-3 rounded-xl bg-linear-to-br ${info.color} shadow-lg shadow-black/20`}>
+                        <info.icon size={20} className="text-white" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{info.label}</p>
+                        <p className="text-white font-semibold text-sm truncate max-w-50">{info.value}</p>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
 
-              {/* Right Column: Contact Form */}
-              <div className="relative">
-                <div className="absolute -inset-4 bg-linear-to-r from-blue-500/10 to-purple-500/10 blur-3xl rounded-[3rem] -z-10" />
-                <form ref={form} onSubmit={sendEmail} className="space-y-5 bg-white/5 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] border border-white/10 shadow-2xl">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Right Side: The Form */}
+              <div style={{ transform: "translateZ(80px)" }} className="relative">
+                <div className="bg-slate-900/50 backdrop-blur-xl p-8 md:p-10 rounded-[2.5rem] border border-white/10 shadow-xl relative z-20">
+                  <form ref={formRef} onSubmit={sendEmail} className="space-y-5">
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-400 uppercase ml-2 tracking-widest">Your Name</label>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Name</label>
                       <input
                         type="text"
                         name="from_name"
+                        required
                         value={formData.from_name}
                         onChange={handleChange}
-                        placeholder="Ishan Ekanayaka"
-                        className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
-                        required
+                        placeholder="Your Name"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
                       />
                     </div>
+
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-400 uppercase ml-2 tracking-widest">Email Address</label>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
                       <input
                         type="email"
                         name="reply_to"
+                        required
                         value={formData.reply_to}
                         onChange={handleChange}
-                        placeholder="name@company.com"
-                        className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
-                        required
+                        placeholder="email@example.com"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
                       />
                     </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase ml-2 tracking-widest">Contact Number</label>
-                    <input
-                      type="text"
-                      name="contact_number"
-                      value={formData.contact_number}
-                      onChange={handleChange}
-                      placeholder="+94 7X XXX XXXX"
-                      className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
-                      required
-                    />
-                  </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase ml-2 tracking-widest">Your Message</label>
-                    <textarea
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      placeholder="Hi, I'd like to talk about a project..."
-                      rows={4}
-                      className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:ring-2 focus:ring-blue-500/50 resize-none transition-all placeholder:text-slate-600"
-                      required
-                    />
-                  </div>
-                  
-                  <button
-                    type="submit"
-                    disabled={isSending || isSent}
-                    className={`w-full px-8 py-5 rounded-2xl font-bold transition-all flex items-center justify-center gap-3 overflow-hidden relative group ${
-                      isSent 
-                        ? "bg-green-500 text-white cursor-default" 
-                        : "bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-xl shadow-blue-500/20 active:scale-95"
-                    }`}
-                  >
-                    {isSending ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Sending Message...</span>
-                      </>
-                    ) : isSent ? (
-                      <>
-                        <Check className="w-6 h-6" />
-                        <span>Message Sent Successfully!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                        <span>Send Message</span>
-                      </>
-                    )}
-                  </button>
-                </form>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Contact</label>
+                      <input
+                        type="text"
+                        name="contact_number"
+                        required
+                        value={formData.contact_number}
+                        onChange={handleChange}
+                        placeholder="+94 ..."
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Message</label>
+                      <textarea
+                        name="message"
+                        required
+                        rows={4}
+                        value={formData.message}
+                        onChange={handleChange}
+                        placeholder="Tell me about your project..."
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white outline-none focus:ring-2 focus:ring-blue-500/50 resize-none transition-all placeholder:text-slate-600"
+                      />
+                    </div>
+
+                    {error && <p className="text-red-400 text-sm">{error}</p>}
+
+                    <motion.button
+                      type="submit"
+                      disabled={isSending || isSent}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all ${
+                        isSent ? "bg-green-500 text-white" : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30"
+                      }`}
+                    >
+                      {isSending ? <Loader2 className="animate-spin" /> : isSent ? <Check /> : <Send size={18} />}
+                      {isSending ? "Sending..." : isSent ? "Sent!" : "Send Message"}
+                    </motion.button>
+                  </form>
+                </div>
+                <div className="absolute -inset-2 bg-linear-to-r from-blue-600 to-purple-600 rounded-[3rem] blur-2xl opacity-20 -z-10" />
               </div>
 
             </div>
-          </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>

@@ -1,9 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sparkles } from 'lucide-react';
-import { ThemeToggle } from "./ThemeToggle"; // ThemeToggle Component එක මෙතැනින් Import වේ
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { Menu, X, Sun, Moon } from 'lucide-react';
 
 const NAV_LINKS = [
   { href: "/", key: "home", label: "Home" },
@@ -12,106 +11,182 @@ const NAV_LINKS = [
   { href: "#contact", key: "contact", label: "Contact" },
 ];
 
+// --- Theme Toggle Component ---
+const ThemeToggle = () => {
+  const [mounted, setMounted] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    // We use a small delay or ensure this runs after the initial paint 
+    // to avoid the synchronous "cascading render" warning.
+    const initializeTheme = () => {
+      const theme = localStorage.getItem('theme');
+      const isDarkMode = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      
+      setIsDark(isDarkMode);
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+      }
+      setMounted(true);
+    };
+
+    initializeTheme();
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    if (newTheme) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
+  // Prevents hydration mismatch by not rendering the icons until mounted
+  if (!mounted) return <div className="w-10 h-10" />;
+
+  return (
+    <motion.button
+      whileHover={{ scale: 1.1, rotate: 15 }}
+      whileTap={{ scale: 0.9 }}
+      onClick={toggleTheme}
+      className="p-3 rounded-2xl backdrop-blur-xl border border-white/20 dark:border-white/10 transition-all bg-white/10 dark:bg-slate-800/50"
+      style={{ boxShadow: "0 8px 32px rgba(0, 0, 0, 0.05)" }}
+    >
+      <AnimatePresence mode="wait">
+        {isDark ? (
+          <motion.div
+            key="sun"
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -10, opacity: 0 }}
+          >
+            <Sun size={20} className="text-yellow-400" />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="moon"
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -10, opacity: 0 }}
+          >
+            <Moon size={20} className="text-slate-700" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
+  );
+};
+
+// --- Main Navbar Component ---
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  
+  const { scrollYProgress } = useScroll();
+  const navOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0.95]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Modern Red-Brown Color Palette
-  const accentGradient = "from-[#8B0000] via-[#5D2906] to-[#4A1E1E]"; 
-  const hoverGradient = "from-[#A52A2A] to-[#5D2906]";
-
   return (
     <>
       <motion.nav
+        style={{ opacity: navOpacity }}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
+        transition={{ duration: 0.6, type: "spring" }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled ? 'py-3' : 'py-6'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <motion.div
-            animate={{
-              scale: scrolled ? 0.98 : 1,
-            }}
-            className={`relative flex items-center justify-between px-6 md:px-8 py-4 rounded-3xl transition-all duration-500 ${
-              scrolled
-                ? 'bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl border border-red-900/10 dark:border-red-500/10 shadow-[0_8px_32px_rgba(139,0,0,0.15)]'
-                : 'bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border border-white/10'
-            }`}
+            animate={{ scale: scrolled ? 0.98 : 1, y: scrolled ? 4 : 0 }}
+            className="relative"
           >
-            {/* Logo Section */}
-            <Link href="/" className="relative group">
-              <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2">
-                <div className={`relative w-10 h-10 bg-linear-to-br ${accentGradient} rounded-xl flex items-center justify-center shadow-lg`}>
-                  <Sparkles className="w-5 h-5 text-white/90" />
-                </div>
-                <span className="text-2xl font-black tracking-tighter bg-linear-to-r from-[#5D2906] to-[#8B0000] dark:from-white dark:to-red-200 bg-clip-text text-transparent">
-                  Ishan Ekanayaka
-                </span>
-              </motion.div>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-1 bg-slate-200/30 dark:bg-slate-800/40 backdrop-blur-xl rounded-2xl px-2 py-2 border border-red-900/5 dark:border-white/5">
-              {NAV_LINKS.map((link) => (
-                <Link key={link.key} href={link.href}>
+            {/* Background Glow - Fixed: bg-linear-to-r and rounded-4xl */}
+            <div className={`absolute -inset-2 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 rounded-4xl blur-2xl transition-opacity duration-500 ${
+              scrolled ? 'opacity-15' : 'opacity-0'
+            }`} />
+            
+            {/* Navbar Container */}
+            <div
+              className={`relative flex items-center justify-between px-6 py-4 rounded-[1.75rem] border transition-all duration-500 ${
+                scrolled 
+                ? 'bg-white/80 dark:bg-slate-900/80 border-white/20 dark:border-white/10 shadow-2xl' 
+                : 'bg-white/40 dark:bg-transparent border-white/10'
+              }`}
+              style={{ backdropFilter: "blur(20px)" }}
+            >
+              {/* Logo Section */}
+              <Link href="/" className="group">
+                <motion.div className="flex items-center gap-3">
                   <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setActiveSection(link.key)}
-                    className={`relative px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer ${
-                      activeSection === link.key
-                        ? 'text-white'
-                        : 'text-slate-700 dark:text-slate-300 hover:text-[#8B0000]'
-                    }`}
+                    whileHover={{ rotate: [0, -10, 10, 0] }}
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-500/40"
+                    style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
                   >
-                    {activeSection === link.key && (
-                      <motion.div
-                        layoutId="activeSection"
-                        className={`absolute inset-0 bg-linear-to-r ${accentGradient} rounded-xl shadow-md`}
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                      />
-                    )}
-                    <span className="relative z-10">{link.label}</span>
+                    IE
                   </motion.div>
-                </Link>
-              ))}
-            </div>
+                  <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white hidden sm:block">
+                    Ishan Ekanayaka
+                  </span>
+                </motion.div>
+              </Link>
 
-            {/* Right Side: Toggle + CTA */}
-            <div className="flex items-center gap-3">
-              {/* Theme Toggle Button */}
-              <ThemeToggle />
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-2xl border border-black/5 dark:border-white/5">
+                {NAV_LINKS.map((link) => (
+                  <Link key={link.key} href={link.href}>
+                    <motion.div
+                      onClick={() => setActiveSection(link.key)}
+                      className={`relative px-6 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-all ${
+                        activeSection === link.key ? 'text-white' : 'text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      {activeSection === link.key && (
+                        <motion.div
+                          layoutId="activeSection"
+                          className="absolute inset-0 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 -z-10 shadow-md"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                      {link.label}
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
 
-              <div className="hidden md:block">
+              {/* Right Side Tools */}
+              <div className="flex items-center gap-3">
+                <ThemeToggle />
+
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`relative group px-6 py-3 bg-linear-to-r ${accentGradient} text-white text-sm rounded-xl font-bold shadow-lg overflow-hidden transition-all`}
+                  onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="hidden md:block px-6 py-3 rounded-2xl font-bold text-white text-sm bg-linear-to-r from-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/25"
                 >
-                  <span className="relative z-10">Let&apos;s Talk</span>
-                  <div className={`absolute inset-0 bg-linear-to-r ${hoverGradient} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                  Let&apos;s Talk
+                </motion.button>
+
+                {/* Mobile Menu Toggle */}
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  className="md:hidden p-3 rounded-2xl bg-black/5 dark:bg-white/10 dark:text-white"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                >
+                  {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </motion.button>
               </div>
-
-              {/* Mobile Toggle Button */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                className="md:hidden p-2 rounded-xl bg-slate-100 dark:bg-red-950/30 text-red-900 dark:text-red-100"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </motion.button>
             </div>
           </motion.div>
         </div>
@@ -121,56 +196,48 @@ const Navbar = () => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-red-950/20 backdrop-blur-sm z-40 md:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-60 md:hidden"
             />
-
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-80 bg-white/95 dark:bg-[#1A0B0B] backdrop-blur-2xl z-50 md:hidden border-l border-red-900/10 shadow-2xl"
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 h-full w-[80%] max-w-sm z-70 bg-white dark:bg-slate-900 shadow-2xl md:hidden flex flex-col p-8"
             >
-              <div className="flex flex-col h-full p-8 pt-24">
-                <div className="space-y-3">
-                  {NAV_LINKS.map((link, index) => (
-                    <motion.div
-                      key={link.key}
-                      initial={{ opacity: 0, x: 50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <Link
-                        href={link.href}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`block px-6 py-4 rounded-2xl text-lg font-bold transition-all text-slate-900 dark:text-red-50 hover:bg-linear-to-r hover:${hoverGradient} hover:text-white`}
-                      >
-                        {link.label}
-                      </Link>
-                    </motion.div>
-                  ))}
-                </div>
-
-                <div className="mt-auto space-y-4">
-                  <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/50 flex items-center justify-between">
-                    <span className="text-sm font-bold text-slate-500">Switch Theme</span>
-                    <ThemeToggle />
-                  </div>
-                  
-                  <motion.button
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`w-full px-6 py-4 bg-linear-to-r ${accentGradient} text-white rounded-2xl font-bold shadow-lg`}
+              <div className="flex justify-between items-center mb-12">
+                 <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold">IE</div>
+                 <button onClick={() => setMobileMenuOpen(false)} className="p-2 dark:text-white"><X /></button>
+              </div>
+              
+              <div className="flex flex-col gap-4">
+                {NAV_LINKS.map((link) => (
+                  <Link 
+                    key={link.key} 
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-2xl font-bold text-slate-800 dark:text-slate-100 hover:text-indigo-600 transition-colors"
                   >
-                    Let&apos;s Talk
-                  </motion.button>
-                </div>
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+
+              <div className="mt-auto pt-8 border-t border-slate-100 dark:border-slate-800">
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="w-full py-4 rounded-2xl bg-indigo-600 text-white font-bold"
+                >
+                  Let&apos;s Talk
+                </button>
               </div>
             </motion.div>
           </>
