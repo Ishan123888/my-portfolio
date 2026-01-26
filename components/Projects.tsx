@@ -3,13 +3,15 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowUpRight, Github, ExternalLink, Sparkles, Layout, BarChart3, Award, GraduationCap } from "lucide-react";
 import { useState, useRef, useMemo } from "react";
 
+const GITHUB_PROFILE = "https://github.com/Ishan123888";
+
 const PROJECTS = [
   {
     title: "Gowigo - Agri Tech Platform",
     description: "A comprehensive React Native mobile application for farmers. Features real-time marketplace, PayHere payment integration, and a WordPress-based landing page.",
     tags: ["React Native", "Node.js", "WordPress", "PayHere API"],
-    github: "#",
-    demo: "#",
+    github: GITHUB_PROFILE,
+    demo: GITHUB_PROFILE,
     size: "large",
     gradient: "from-emerald-500 via-green-500 to-teal-500",
     icon: "🚜",
@@ -18,7 +20,7 @@ const PROJECTS = [
     title: "Astro Services - Jyothishya Web",
     description: "A professional astrology service platform developed for a specialized practitioner. Features a modern, spiritual aesthetic with localized content and service showcases.",
     tags: ["HTML", "CSS", "JavaScript", "Responsive Design"],
-    github: "#",
+    github: GITHUB_PROFILE,
     demo: "https://ravindrapiyasena123-ui.github.io/jyothishya/",
     size: "small",
     gradient: "from-amber-500 via-orange-500 to-yellow-500",
@@ -28,8 +30,8 @@ const PROJECTS = [
     title: "Design & Data Analytics",
     description: "Visualizing business intelligence using Power BI and advanced Excel. Includes UI/UX prototypes designed in Figma for medical and e-commerce systems.",
     tags: ["Figma", "Power BI", "Advanced Excel", "UI/UX"],
-    github: "#",
-    demo: "#",
+    github: GITHUB_PROFILE,
+    demo: GITHUB_PROFILE,
     size: "small",
     gradient: "from-blue-400 to-indigo-600",
     icon: <BarChart3 className="w-10 h-10" />,
@@ -38,8 +40,8 @@ const PROJECTS = [
     title: "MediCura Medical System",
     description: "Full-stack Billing & Payment module. Built with the MERN stack to handle automated invoicing and expense tracking with secure data management.",
     tags: ["MongoDB", "Express", "React", "Node.js"],
-    github: "https://github.com/Ishan123888",
-    demo: "#",
+    github: GITHUB_PROFILE,
+    demo: GITHUB_PROFILE,
     size: "small",
     gradient: "from-blue-500 to-cyan-500",
     icon: "💊",
@@ -48,8 +50,8 @@ const PROJECTS = [
     title: "MindEase Mobile App",
     description: "Mental health tracker with a 3D Neumorphic UI. Developed using Kotlin and Android Studio with deep attention to color theory and relaxing soundscapes.",
     tags: ["Kotlin", "C++", "Android Studio", "Firebase"],
-    github: "#",
-    demo: "#",
+    github: GITHUB_PROFILE,
+    demo: GITHUB_PROFILE,
     size: "small",
     gradient: "from-purple-500 to-pink-500",
     icon: "🧘",
@@ -58,8 +60,8 @@ const PROJECTS = [
     title: "Reina Fashion Store",
     description: "Ladies' footwear e-commerce platform with PHP/Java backend integration. Includes inventory management, cart system, and automated PDF billing.",
     tags: ["PHP", "Java", "MySQL", "JSP"],
-    github: "#",
-    demo: "#",
+    github: GITHUB_PROFILE,
+    demo: GITHUB_PROFILE,
     size: "small",
     gradient: "from-pink-500 to-rose-500",
     icon: "👠",
@@ -68,8 +70,8 @@ const PROJECTS = [
     title: "Employee Management System",
     description: "Desktop application with role-based login and internationalization (English/Sinhala). Generates PDF salary slips and manages corporate HR CRUD operations.",
     tags: ["Java Swing", "MySQL", "i18n", "JasperReports"],
-    github: "#",
-    demo: "#",
+    github: GITHUB_PROFILE,
+    demo: GITHUB_PROFILE,
     size: "small",
     gradient: "from-indigo-500 to-blue-600",
     icon: "👨‍💼",
@@ -78,8 +80,8 @@ const PROJECTS = [
     title: "Transport Management System",
     description: "Web application using MVC pattern for logistics. Handles Driver Management and secure role-based access control using Tomcat.",
     tags: ["JSP", "Servlets", "JDBC", "MySQL"],
-    github: "#",
-    demo: "#",
+    github: GITHUB_PROFILE,
+    demo: GITHUB_PROFILE,
     size: "small",
     gradient: "from-slate-500 to-slate-800",
     icon: "🚛",
@@ -88,8 +90,8 @@ const PROJECTS = [
     title: "Algorithm & Logic Lab",
     description: "A collection of fundamental system tools and data structure implementations. Explores core computing concepts and performance optimization.",
     tags: ["C", "C++", "Java", "Data Structures"],
-    github: "#",
-    demo: "#",
+    github: GITHUB_PROFILE,
+    demo: GITHUB_PROFILE,
     size: "small",
     gradient: "from-slate-600 to-slate-900",
     icon: <Layout className="w-10 h-10" />,
@@ -133,7 +135,7 @@ const ProjectCard = ({ project, index }: { project: typeof PROJECTS[0], index: n
 
   const handleNavigate = (url: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (url !== "#") {
+    if (url && url !== "#") {
       window.open(url, "_blank", "noopener,noreferrer");
     }
   };
@@ -166,7 +168,7 @@ const ProjectCard = ({ project, index }: { project: typeof PROJECTS[0], index: n
                   <motion.button 
                     whileHover={{ scale: 1.1 }} 
                     onClick={(e) => handleNavigate(project.github, e)}
-                    className="p-4 bg-white/10 rounded-2xl border border-white/20 text-white"
+                    className="p-4 bg-white/10 rounded-2xl border border-white/20 text-white hover:bg-white/20 transition-colors"
                   >
                     <Github size={20} />
                   </motion.button>
@@ -192,7 +194,7 @@ const ProjectCard = ({ project, index }: { project: typeof PROJECTS[0], index: n
               <h3 className="text-3xl font-black text-white">{project.title}</h3>
               <p className="text-slate-400 leading-relaxed text-sm md:text-base">{project.description}</p>
               <div className="flex items-center gap-2 text-white font-bold pt-2 group/link">
-                <span className="text-sm uppercase tracking-widest">Case Study</span>
+                <span className="text-sm uppercase tracking-widest">View Project</span>
                 <ArrowUpRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
               </div>
             </div>
@@ -221,7 +223,6 @@ const Projects = () => {
   return (
     <section id="projects" className="py-32 relative bg-slate-950 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
         <div className="mb-20 flex flex-col md:flex-row justify-between items-end gap-8">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/5">
@@ -235,14 +236,12 @@ const Projects = () => {
           </p>
         </div>
 
-        {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-32">
           {PROJECTS.map((project, index) => (
             <ProjectCard key={index} project={project} index={index} />
           ))}
         </div>
 
-        {/* Certificates Sub-section */}
         <motion.div 
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

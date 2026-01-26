@@ -14,9 +14,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// --- මම මෙතන metadata එක update කළා ---
 export const metadata: Metadata = {
   title: "Ishan Ekanayaka - Full-Stack Developer",
   description: "Crafting next-gen digital experiences with cutting-edge technology",
+  icons: {
+    icon: "/icon.png", // ඔයාගේ පින්තූරය 'public' folder එකේ icon.png නමින් තිබිය යුතුයි
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
