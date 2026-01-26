@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chanet Lanka | Modern Portfolio 2026",
+  title: "Ishan Ekanayaka - Full-Stack Developer",
   description: "Crafting next-gen digital experiences with cutting-edge technology",
 };
 
