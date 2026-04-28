@@ -17,6 +17,16 @@ const PROJECTS = [
     icon: "🚜",
   },
   {
+    title: "Smart Campus System",
+    description: "A full-stack Smart Campus platform built with React and Spring Boot REST API. Features student portal, resource booking, event management, and real-time notifications — with MongoDB Atlas cloud database and Git version control.",
+    tags: ["React", "Spring Boot", "REST API", "MongoDB Atlas", "Git"],
+    github: GITHUB_PROFILE,
+    demo: "https://it3030-paf-2026-smart-campus-group.vercel.app/",
+    size: "large",
+    gradient: "from-indigo-500 via-purple-500 to-violet-500",
+    icon: "🎓",
+  },
+  {
     title: "Astro Services - Jyothishya Web",
     description: "A professional astrology service platform developed for a specialized practitioner. Features a modern, spiritual aesthetic with localized content and service showcases.",
     tags: ["HTML", "CSS", "JavaScript", "Responsive Design"],
@@ -58,10 +68,10 @@ const PROJECTS = [
   },
   {
     title: "Reina Fashion Store",
-    description: "Ladies' footwear e-commerce platform with PHP/Java backend integration. Includes inventory management, cart system, and automated PDF billing.",
-    tags: ["PHP", "Java", "MySQL", "JSP"],
+    description: "Modern e-commerce experience for ladies' footwear. Featuring secure Google Authentication, real-time inventory management with Supabase, and a high-performance Next.js frontend.",
+    tags: ["Next.js", "Supabase", "Tailored Auth", "PostgreSQL"],
     github: GITHUB_PROFILE,
-    demo: GITHUB_PROFILE,
+    demo: "https://reina-store.vercel.app/",
     size: "small",
     gradient: "from-pink-500 to-rose-500",
     icon: "👠",
@@ -106,19 +116,19 @@ const CERTIFICATES = [
   { title: "Java Programming", issuer: "SLIIT / Alison" },
 ];
 
-const generateParticlePositions = () => 
+const generateParticlePositions = () =>
   Array.from({ length: 5 }, (_, i) => ({
     x: (i * 23 + 17) % 100,
     y: (i * 37 + 29) % 100,
   }));
 
-const ProjectCard = ({ project, index }: { project: typeof PROJECTS[0], index: number }) => {
+const ProjectCard = ({ project, index }: { project: typeof PROJECTS[0]; index: number }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  
+
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  
+
   const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [10, -10]), { stiffness: 300, damping: 30 });
   const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-10, 10]), { stiffness: 300, damping: 30 });
 
@@ -149,32 +159,40 @@ const ProjectCard = ({ project, index }: { project: typeof PROJECTS[0], index: n
       transition={{ delay: index * 0.1, duration: 0.8 }}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => { setIsHovered(false); mouseX.set(0); mouseY.set(0); }}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        mouseX.set(0);
+        mouseY.set(0);
+      }}
       onClick={() => handleNavigate(project.demo)}
       className={`group relative cursor-pointer ${project.size === "large" ? "md:col-span-2" : ""}`}
       style={{ transformStyle: "preserve-3d", perspective: "1000px" }}
     >
       <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative h-full">
-        <div className={`absolute -inset-1 bg-linear-to-r ${project.gradient} rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
-        
+        <div
+          className={`absolute -inset-1 bg-linear-to-r ${project.gradient} rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`}
+        />
+
         <div className="relative h-full min-h-100 rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-xl overflow-hidden">
           <div className="relative h-full p-8 md:p-10 flex flex-col justify-between z-10">
             <div className="flex justify-between items-start mb-8">
-              <div className={`w-20 h-20 rounded-2xl flex items-center justify-center text-4xl shadow-2xl bg-linear-to-br ${project.gradient}`}>
+              <div
+                className={`w-20 h-20 rounded-2xl flex items-center justify-center text-4xl shadow-2xl bg-linear-to-br ${project.gradient}`}
+              >
                 {project.icon}
               </div>
               <div className="flex gap-3">
                 {project.github !== "#" && (
-                  <motion.button 
-                    whileHover={{ scale: 1.1 }} 
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
                     onClick={(e) => handleNavigate(project.github, e)}
                     className="p-4 bg-white/10 rounded-2xl border border-white/20 text-white hover:bg-white/20 transition-colors"
                   >
                     <Github size={20} />
                   </motion.button>
                 )}
-                <motion.button 
-                  whileHover={{ scale: 1.1 }} 
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
                   onClick={(e) => handleNavigate(project.demo, e)}
                   className={`p-4 bg-linear-to-br ${project.gradient} rounded-2xl border border-white/20 text-white`}
                 >
@@ -185,8 +203,11 @@ const ProjectCard = ({ project, index }: { project: typeof PROJECTS[0], index: n
 
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
-                {project.tags.map(tag => (
-                  <span key={tag} className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300">
+                {project.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300"
+                  >
                     {tag}
                   </span>
                 ))}
@@ -229,7 +250,9 @@ const Projects = () => {
               <Sparkles className="w-4 h-4 text-blue-400" />
               <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Selected Works</span>
             </div>
-            <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter">PROJECTS<span className="text-blue-500">.</span></h2>
+            <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter">
+              PROJECTS<span className="text-blue-500">.</span>
+            </h2>
           </div>
           <p className="text-slate-400 max-w-sm text-right leading-relaxed">
             From MERN stack applications to Data Analytics with Power BI and Mobile Development.
@@ -242,7 +265,7 @@ const Projects = () => {
           ))}
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           className="pt-20 border-t border-white/10"
@@ -251,7 +274,7 @@ const Projects = () => {
             <GraduationCap className="text-blue-500 w-8 h-8" />
             <h3 className="text-4xl font-black text-white uppercase tracking-tight">Certifications</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {CERTIFICATES.map((cert, i) => (
               <motion.div
