@@ -51,8 +51,8 @@ const Hero = () => {
 
   const handleDownloadCV = () => {
     const link = document.createElement("a");
-    link.href = "/ISHAN EKANAYAKA.pdf";
-    link.download = "ISHAN EKANAYAKA.pdf";
+    link.href = "/Ishan_Ekanayaka_CV.pdf";
+    link.download = "Ishan_Ekanayaka_CV.pdf";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
